@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Cognitive Test</title>
+	<style>
+		html, body {
+			height: 100%;
+			max-height: 100%;
+		}
+		#container {
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			height: 100%;
+			min-height: 100%;
+			width: 100%;
+		}
+		#current_string {
+			display: none;
+			text-align: center;
+			font-size: 144pt;
+			width: 100%;
+		}
+		#answers {
+			display: none;
+			text-align: center;
+			width: 100%;
+		}
+		#answers input {
+			display: block;
+			margin-left: auto;
+			margin-right: auto;
+		}
+		#intro, #prelude, #score {
+			font-size: 24pt;
+		}
+	</style>
+</head>
+<body>
+	<div id="container">
+		<div id="intro">
+			You are about to complete a short term memory test.<br>
+			A few words will flash on your computer monitor for 3 seconds each.<br>
+			After the words disappear, you will be prompted to record your results in a text box.<br>
+			After you complete your trial a page will appear with your results. Please record your results.<br>
+			Please click start when you are ready to begin.<br>
+			<button id="start_button">Start</button>
+		</div>
+		<div id="prelude"></div>
+		<div id="current_string"></div>
+		<div id="answers">
+			Please record the words you remember below. <br>
+			<input id="answer0" type="text">
+			<input id="answer1" type="text">
+			<input id="answer2" type="text">
+			<input id="answer3" type="text">
+			<input id="answer4" type="text">
+			<input id="answer5" type="text">
+			<input id="answer6" type="text">
+			<input id="answer7" type="text">
+			<input id="answer8" type="text">
+			<input id="answer9" type="text">
+			<button id="finish-answering">Done</button>
+		</div>
+		<div id="score"></div>
+	</div>
+
+	<script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
+	<script>
+		const strings = ['cat', 'book', 'car', 'tree', 'bicycle', 'chair', 'mountain', 'pen', 'mask', 'bird'];
+		const read_time = 300;
+		
+		// borrowed from https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Set :
+		function intersection(setA, setB) {
+			let _intersection = new Set();
+			for (let elem of setB) {
+				if (setA.has(elem)) {
+					_intersection.add(elem);
+				}
+			}
+			return _intersection;
+		}
+		
+		$('#start_button').click(function() {
+			$('#intro').hide();
+			$('#current_string').show();
+		
+			const r = Math.random();
+			const color_name = r < 0.333 ? 'red' : r < 0.666 ? 'green' : 'white';
+			const bg_color = {'red': '#FF0000', 'green': '#00FF00', 'white': '#FFFFFF'}[color_name];
+			const fg_color = {'red': '#FFFFFF', 'green': '#FFFFFF', 'white': '#000000'}[color_name];
+			
+			let t = 0;
+			
+			for (let i = 0; i < strings.length; i++) {
+				setTimeout(function() {
+					$('body').css('background-color', bg_color).css('color', fg_color);
+					$('#prelude, #answers').hide();
+					$('#current_string').show().text(strings[i]);
+				}, t);
+				t += read_time;
+			}
+			
+			setTimeout(function() {
+				$('body').css('background-color', '#FFFFFF').css('color', '#000000');
+				$('#current_string').hide();
+				$('#answers').show();
+				$('#answers input').val('');
+				$('#finish-answering').click(function() {
+					let score = 0;
+					let seen = []
+					for (let i = 0; i < 10; i++) {
+						answer = $('#answer' + i).val();
+						if (strings.includes(answer) && !seen.includes(answer))
+							score++;
+						seen.push(answer);
+					}
+					$('#score').show().html('You got ' + score + ' word' + (score == 1 ? '' : 's') + ' correct.<br>Your color was ' + color_name + '.<br>Please return to the Qualtrics survey.');
+					$('#answers').hide();
+				});
+			}, t);
+		});
+	</script>
+</body>
+</html>
